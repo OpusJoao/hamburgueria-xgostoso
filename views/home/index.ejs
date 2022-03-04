@@ -1,0 +1,319 @@
+<%- include('../partials/header')%>
+<div class="container mt-3 position-relative">
+    <div class="alert alert-success w-100 position-relative" style="z-index: 10;" id="message-alert">
+        <button type="button" class="close" data-dismiss="alert">x</button>
+        <strong id="alert-title">...</strong> <span id="alert-text">...</span>
+    </div>
+  <div class="row justify-content-md-center">
+    <div class="col-12 col-md-8">
+      <div class="alert alert-primary" role="alert">
+        <div class="container-fluid">
+          <div class="row">
+            <strong>Hamburgueria XGostoso</strong>
+          </div>
+          <div class="row">
+            <span id="real-clock"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row justify-content-md-center">
+    <div class="col-12 col-md-8">
+      <form id="form">
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="telefone">Telefone</label>
+              <input
+                type="text"
+                class="form-control"
+                id="telefone"
+                placeholder="(15) 99999-9999"
+              />
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label for="cliente_nome">Nome do cliente</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cliente_nome"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="combo">Combos</label>
+              <select class="custom-select" name="combo" id="combo">
+                <option value="asd">asd</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="cliente_nome">Adicionais</label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  class="checkbox_adicional"
+                  type="checkbox"
+                  name="adicional"
+                  id="adicional_bacon"
+                  value="bacon"
+                />
+                <label class="form-check-label" for="adicional_bacon">
+                  Bacon
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  class="checkbox_adicional"
+                  type="checkbox"
+                  name="adicional"
+                  id="adicional_cheddar"
+                  value="cheddar"
+                />
+                <label class="form-check-label" for="adicional_cheddar">
+                  Cheddar
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  class="checkbox_adicional"
+                  type="checkbox"
+                  name="adicional"
+                  id="adicional_picles"
+                  value="picles"
+                />
+                <label class="form-check-label" for="adicional_picles">
+                  Picles
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="cliente_nome">Entrega?</label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="entrega_tipo"
+                  id="entrega_tipo_viagem"
+                  value="viagem"
+                />
+                <label class="form-check-label" for="entrega_tipo_viagem">
+                  Para viagem
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="entrega_tipo"
+                  id="entrega_tipo_balcao"
+                  value="balcao"
+                />
+                <label class="form-check-label" for="entrega_tipo_balcao">
+                  Balcão
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12 d-flex justify-content-center">
+            <button type="button" class="btn btn-primary m-1" onclick="">
+              Calcular
+            </button>
+            <button type="button" class="btn btn-primary m-1" onclick="makeNewOrder()">
+              Novo Pedido
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary m-1"
+              onclick="showInformations()"
+            >
+              Recibo
+            </button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="form-group">
+              <label for="pedido_total_a_pagar">Total a pagar:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="total_a_pagar"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-group">
+              <label for="pedido_descricao">Descrição do pedido:</label>
+              <textarea
+                type="text"
+                class="form-control"
+                id="pedido_descricao"
+                readonly
+                rows="10"
+              >
+              </textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  let order = {
+    costumer: {
+      phone_number: "",
+      name: "",
+    },
+    combo: "",
+    additionals: [],
+    delivery_method: "",
+  };
+  const template_order = {
+    costumer: {
+      phone_number: "",
+      name: "",
+    },
+    combo: "",
+    additionals: [],
+    delivery_method: "",
+  };
+  let message;
+
+  function clearInformations() {
+    order = template_order;
+  }
+  function setInformations() {
+    clearInformations();
+    if (
+      setPhoneNumber() &&
+      setCostumerName() &&
+      setCombo() &&
+      setDeliveryMethod()
+    ) {
+      setAditionals();
+    } else {
+      message = {
+        options: {
+            class: "alert-danger"
+        },
+        title: "Erro ao processar pedido",
+        body: "Não foi possivel processar seu pedido.",
+      };
+      showMessage(message.options, message);
+      return false;
+    }
+  }
+  function clearPhoneNumber() {
+    order.costumer.phone_number = "";
+  }
+
+  function setPhoneNumber() {
+    order.costumer.phone_number = $("#telefone").val();
+    return order.costumer.phone_number != "";
+  }
+  function setCostumerName() {
+    order.costumer.name = $("#cliente_nome").val();
+    return order.costumer.name != "";
+  }
+  function setCombo() {
+    order.combo = $("#combo").val();
+    return order.combo != "";
+  }
+
+  function clearAdditionals() {
+    order.additionals = [];
+  }
+  function setAditionals() {
+    clearAdditionals();
+    const additionals = document.getElementsByName("adicional");
+
+    additionals.forEach((additional) => {
+      if (additional.checked) {
+        order.additionals.push(additional.value);
+      }
+    });
+
+    return order.additionals != "";
+  }
+  function clearDeliveryMethod() {
+    order.delivery_method = "";
+  }
+  function setDeliveryMethod() {
+    clearDeliveryMethod();
+    const delivery_method = document.getElementsByName("entrega_tipo");
+    delivery_method.forEach((delivery_method) => {
+      if (delivery_method.checked) {
+        order.delivery_method = delivery_method.value;
+      }
+    });
+
+    return order.delivery_method != "";
+  }
+
+  function showMessage(options, message) {
+    console.log("message", message);
+    $("#alert-title").text(message.title)
+    $("#alert-text").text(message.body)
+    $("#message-alert")
+        .addClass(options.class)
+        .fadeTo(2000, 500)
+        .slideUp(500, function () {
+          $("#message-alert").slideUp(500);
+        });
+  }
+
+  function getInformations() {
+    setInformations();
+    console.log("order", order);
+    return order;
+  }
+
+  function showInformations() {
+    let order_to_show = getInformations();
+  }
+
+  function writeOrderDescription(){
+    $("#telefone").val(order.costumer.phone_number);
+    $("#cliente_nome").val(order.costumer.name);
+    // $("#combo").val();
+   }
+
+   
+  function makeNewOrder() {
+      clearInformations()
+      clearForm()
+  }
+
+  function clearForm(){
+      $("#form").trigger("reset")
+  }
+
+   
+</script>
+<script>
+  $(document).ready(function () {
+    $("#message-alert").hide();
+    var $clock = $('#real-clock');
+
+    setInterval(function () {
+        $clock.html((new Date).toLocaleString().substr(11, 8));
+    }, 1000);
+  });
+</script>
+<%- include('../partials/footer')%>
